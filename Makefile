@@ -1,10 +1,12 @@
 PROJECT = zrun
 
 $(PROJECT).prg: $(PROJECT).asm bios.inc
-	../date.pl > date.inc
-	cpp $(PROJECT).asm -o - | sed -e 's/^#.*//' > temp.asm
-	rcasm -l -v -x -d1802 temp
-	cat temp.prg | sed -f adjust.sed > $(PROJECT).prg
+	../dateextended.pl > date.inc
+	../build.pl > build.inc
+	rcasm -l -v -x -d 1802 $(PROJECT) 2>&1 | tee $(PROJECT).lst
+	cat $(PROJECT).prg | sed -f adjust.sed > x.prg
+	rm $(PROJECT).prg
+	mv x.prg $(PROJECT).prg
 
 clean:
 	-rm $(PROJECT).prg

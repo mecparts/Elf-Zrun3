@@ -6,7 +6,7 @@
 ; *** without express written permission from the author.         ***
 ; *******************************************************************
 
-; #define DEBUG
+#define DEBUG
 
 include    bios.inc
 include    kernel.inc
@@ -24,7 +24,11 @@ include    kernel.inc
 
            org     8000h
            lbr     0ff00h
+#ifdef DEBUG
+           db      'zrun3d',0
+#else
            db      'zrun3',0
+#endif
            dw      9000h
            dw      endrom+7000h
            dw      2000h
@@ -36,6 +40,8 @@ include    kernel.inc
            br      start
 
 include    date.inc
+include    build.inc
+           db      'Written by Michael H. Riley',0
           
 data:
 ip:        db      0,0,0
@@ -103,7 +109,17 @@ fildes2:   db      0,0,0,0
            db      0,0,0,0
 
 
-start:     ldi     high data           ; setup pointer for data page
+start:     lda     ra                  ; move past any spaces
+           smi     ' '
+           lbz     start
+           dec     ra                  ; back to non-space character
+           ldn     ra                  ; was an argument given
+           lbnz    start1              ; jump if so
+           sep     scall               ; otherwise display usage
+           dw      f_inmsg
+           db      'Usage: zrun3 file',10,13,0
+           lbr     o_wrmboot           ; and return to os
+start1:    ldi     high data           ; setup pointer for data page
            phi     rd
            ghi     ra                  ; copy argument address to rf
            phi     rf
