@@ -264,7 +264,7 @@ ver_ok:    inc     rf                  ; move to header[1]
            phi     rf
            ldi     low page_tab        ; setup page 0 has holding nothing
            plo     rd
-           load    rc,O_HIMEM
+           mov     rc,O_HIMEM
 page_loop: ldi     0                   ; mark as nothing in page
            str     rd
            inc     rd
