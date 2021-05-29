@@ -11,6 +11,8 @@
 include    bios.inc
 include    kernel.inc
 
+O_HIMEM    equ     0442h               ; himem value
+
 ; RD - Data page register
 ; RC - Stack frame pointer
 ; RB - Local stack pointer
@@ -262,6 +264,7 @@ ver_ok:    inc     rf                  ; move to header[1]
            phi     rf
            ldi     low page_tab        ; setup page 0 has holding nothing
            plo     rd
+           load    rc,O_HIMEM
 page_loop: ldi     0                   ; mark as nothing in page
            str     rd
            inc     rd
@@ -274,7 +277,10 @@ page_loop: ldi     0                   ; mark as nothing in page
            ghi     rf                  ; get address
            adi     2                   ; add 512 byte
            phi     rf
-           smi     07bh                ; loop until 7bh
+           adi     3                   ; loop until 3 pages below himem
+           sex     rc
+           sm
+           sex     r2
            lbnf    page_loop
            ldi     0                   ; place termination record
            str     rd
@@ -290,16 +296,20 @@ page_loop: ldi     0                   ; mark as nothing in page
            glo     re                  ; recover value
            str     rd                  ; and store
            
-           ldi     7eh                 ; set main stack to 7effh
-           phi     r2
-           ldi     0ffh
+           inc     rc
+           ldn     rc                  ; set main stack to top of memory
            plo     r2
-           ldi     7dh                 ; set game stack to 7dffh
+           dec     rc
+           ldn     rc
+           phi     r2
+           smi     1                   ; set game stack 1 page below TOM
            phi     rb
-           phi     rc
-           ldi     0ffh
+           inc     rc
+           ldn     rc
            plo     rb
            plo     rc
+           ghi     rb
+           phi     rc
            ldi     15                  ; setup 15 local variables for main
            plo     re
            sex     rb
